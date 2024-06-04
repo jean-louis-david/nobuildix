@@ -322,8 +322,8 @@ public:
         bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "qp-secret-spending-key-main";
         bech32HRPs[SAPLING_EXTENDED_FVK]         = "qpxviews";
 
-bech32HRPs[BLS_SECRET_KEY]               = "bls-sk-qnt";
-bech32HRPs[BLS_PUBLIC_KEY]               = "bls-pk-qnt";
+        bech32HRPs[BLS_SECRET_KEY]               = "bls-sk-qnt";
+        bech32HRPs[BLS_PUBLIC_KEY]               = "bls-pk-qnt";
 
         // long living quorum params
         consensus.llmqs[Consensus::LLMQ_50_60] = llmq50_60;
@@ -443,8 +443,8 @@ public:
         nDefaultPort = 51474;
 
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("pivx-testnet.seed.fuzzbawls.pw", true);
-        vSeeds.emplace_back("pivx-testnet.seed2.fuzzbawls.pw", true);
+        //vSeeds.emplace_back("pivx-testnet.seed.fuzzbawls.pw", true);
+        //vSeeds.emplace_back("pivx-testnet.seed2.fuzzbawls.pw", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 139); // Testnet pivx addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 19);  // Testnet pivx script addresses start with '8' or '9'
