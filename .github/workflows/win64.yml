@@ -1,0 +1,112 @@
+name: Compile DogeExtreme Windows 64 Wallet
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          depends
+          src/.libs
+          src/.deps
+          src/.objs
+          .config.cache
+        key: ${{ runner.os }}-build-${{ hashFiles('**/*') }}
+        restore-keys: |
+          ${{ runner.os }}-build-
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          libtool \
+          autotools-dev \
+          automake \
+          pkg-config \
+          bsdmainutils \
+          python3 \
+          libssl-dev \
+          libevent-dev \
+          libboost-system-dev \
+          libboost-filesystem-dev \
+          libboost-chrono-dev \
+          libboost-test-dev \
+          libboost-thread-dev \
+          libminiupnpc-dev \
+          libzmq3-dev \
+          libqrencode-dev \
+          libdb-dev \
+          libdb++-dev \
+          gcc-mingw-w64 \
+          g++-mingw-w64
+
+    - name: Set compiler flags
+      run: |
+        export CXXFLAGS="-std=c++11"
+        export LDFLAGS="-std=c++11"
+
+    - name: Compile wallet
+      run: |
+        cd depends
+        make -j $(nproc) HOST=x86_64-w64-mingw32
+        cd ..
+        ./autogen.sh
+        ./configure --prefix=$PWD/depends/x86_64-w64-mingw32 --enable-mining-rpc
+        make -j $(nproc)
+
+    - name: Find and list binaries
+      run: |
+        find src -type f -executable -exec ls -lah {} \;
+
+    - name: Make binaries executable
+      run: |
+        chmod +x src/pivxd.exe
+        chmod +x src/pivx-cli.exe
+        chmod +x src/pivx-tx.exe
+        chmod +x src/qt/pivx-qt.exe
+
+    - name: Archive binaries
+      run: |
+        tar -czvf windows64.tar.gz src/pivxd.exe src/pivx-cli.exe src/pivx-tx.exe src/qt/pivx-qt.exe
+
+    - name: Create GitHub release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        name: "DogeExtreme Wallet Release v${{ github.run_number }}"
+        draft: false
+        prerelease: true
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: windows64.tar.gz
+        asset_name: windows64.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: windows64.tar.gz
