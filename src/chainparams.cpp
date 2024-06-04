@@ -1,11 +1,12 @@
 #include "chainparams.h"
+#include "chainparamsseeds.h"
 #include "consensus/merkle.h"
 #include "tinyformat.h"
-#include "util.h"
 #include "utilstrencodings.h"
 #include "arith_uint256.h"
-#include "chainparamsseeds.h"
 #include <assert.h>
+#include <iostream>
+#include <string>
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -18,63 +19,54 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     txNew.vout[0].scriptPubKey = genesisOutputScript;
 
     CBlock genesis;
+    genesis.vtx.push_back(std::make_shared<const CTransaction>(std::move(txNew)));
+    genesis.hashPrevBlock.SetNull();
+    genesis.nVersion = nVersion;
     genesis.nTime    = nTime;
     genesis.nBits    = nBits;
     genesis.nNonce   = nNonce;
-    genesis.nVersion = nVersion;
-    genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
-    genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
     return genesis;
 }
 
-// Modify this with your own timestamp and output script
-const char* pszTimestamp = "QCCore Jun 4 2024";
-const CScript genesisOutputScript = CScript() << ParseHex("021a88aff20c35889184b71ffc7f81de8859b279feac43c33cb0a30a7dd4685571") << OP_CHECKSIG;
-uint32_t nTime = 1717511487; // Your new timestamp
-uint32_t nNonce = 0;
-uint32_t nBits = 0x1e0ffff0; // Initial difficulty
-CBlock genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, 1, 50 * COIN);
+int main() {
+    std::string pszTimestamp;
+    std::string genesisOutputScriptHex;
+    uint32_t nTime;
 
-// Additional code to find the nonce
-arith_uint256 hashTarget = arith_uint256().SetCompact(nBits);
-while (UintToArith256(genesis.GetHash()) > hashTarget)
-{
-    ++genesis.nNonce;
-    if (genesis.nNonce == 0)
+    std::cout << "Enter pszTimestamp: ";
+    std::getline(std::cin, pszTimestamp);
+
+    std::cout << "Enter genesisOutputScript (hex): ";
+    std::getline(std::cin, genesisOutputScriptHex);
+
+    std::cout << "Enter nTime: ";
+    std::cin >> nTime;
+
+    const CScript genesisOutputScript = CScript() << ParseHex(genesisOutputScriptHex) << OP_CHECKSIG;
+    uint32_t nNonce = 0;
+    uint32_t nBits = 0x1e0ffff0; // Initial difficulty
+    CBlock genesis = CreateGenesisBlock(pszTimestamp.c_str(), genesisOutputScript, nTime, nNonce, nBits, 1, 50 * COIN);
+
+    arith_uint256 hashTarget = arith_uint256().SetCompact(nBits);
+    while (UintToArith256(genesis.GetHash()) > hashTarget)
     {
-        printf("NONCE WRAPPED, incrementing time\n");
-        ++genesis.nTime;
+        ++genesis.nNonce;
+        if (genesis.nNonce == 0)
+        {
+            std::cout << "NONCE WRAPPED, incrementing time\n";
+            ++genesis.nTime;
+        }
     }
+
+    std::cout << "Final Genesis Block:\n";
+    std::cout << "hashMerkleRoot " << genesis.hashMerkleRoot.ToString() << "\n";
+    std::cout << "block.nTime = " << genesis.nTime << "\n";
+    std::cout << "block.nNonce = " << genesis.nNonce << "\n";
+    std::cout << "block.GetHash = " << genesis.GetHash().ToString() << "\n";
+
+    return 0;
 }
-
-// Print the final genesis block details
-printf("Final Genesis Block:\n");
-printf("hashMerkleRoot %s\n", genesis.hashMerkleRoot.ToString().c_str());
-printf("block.nTime = %u \n", genesis.nTime);
-printf("block.nNonce = %u \n", genesis.nNonce);
-printf("block.GetHash = %s\n", genesis.GetHash().ToString().c_str());
-// this one is for testing only
-static Consensus::LLMQParams llmq_test = {
-        .type = Consensus::LLMQ_TEST,
-        .name = "llmq_test",
-        .size = 3,
-        .minSize = 2,
-        .threshold = 2,
-
-        .dkgInterval = 20, // one every 20 minutes
-        .dkgPhaseBlocks = 2,
-        .dkgMiningWindowStart = 10, // dkgPhaseBlocks * 5 = after finalization
-        .dkgMiningWindowEnd = 15,
-        .dkgBadVotesThreshold = 2,
-
-        .signingActiveQuorumCount = 2, // just a few ones to allow easier testing
-
-        .keepOldConnections = 3,
-        .recoveryMembers = 3,
-
-        .cacheDkgInterval = 60,
-};
 
 static Consensus::LLMQParams llmq50_60 = {
         .type = Consensus::LLMQ_50_60,
