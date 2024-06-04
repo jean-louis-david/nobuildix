@@ -3,10 +3,10 @@ name: Compile DogeExtreme Linux 64 Wallet
 on:
   push:
     branches:
-      - master
+      - c823
   pull_request:
     branches:
-      - master
+      - c823
 
 jobs:
   build:

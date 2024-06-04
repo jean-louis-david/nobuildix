@@ -160,7 +160,7 @@ static MapCheckpoints mapCheckpoints = {};
 
 static const CCheckpointData data = {
     &mapCheckpoints,
-    1717514497, // * UNIX timestamp of last checkpoint block
+    1717531098, // * UNIX timestamp of last checkpoint block
     0,    // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the UpdateTip debug.log lines)
     3000        // * estimated number of transactions per day after checkpoint
@@ -173,14 +173,14 @@ static MapCheckpoints mapCheckpointsTestnet = {
 
 static const CCheckpointData dataTestnet = {
     &mapCheckpointsTestnet,
-    1717514497,
+    1717531098,
     0,
     3000};
 
 static MapCheckpoints mapCheckpointsRegtest = {{0, uint256S("0x001")}};
 static const CCheckpointData dataRegtest = {
     &mapCheckpointsRegtest,
-    1717514497,
+    1717531098,
     0,
     100};
 
@@ -191,7 +191,7 @@ public:
     {
         strNetworkID = "main";
 
-        genesis = CreateGenesisBlock(1717515031, 2402015, 0x1e0ffff0, 1, 250 * COIN);
+        genesis = CreateGenesisBlock(1717531098, 2402015, 0x1e0ffff0, 1, 250 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
                 consensus.hashGenesisBlock = uint256S("0x01");
         consensus.powLimit   = uint256S("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -242,7 +242,7 @@ public:
         // spork keys
         consensus.strSporkPubKey = "0410050aa740d280b134b40b40658781fc1116ba7700764e0ce27af3e1737586b3257d19232e0cb5084947f5107e44bcd577f126c9eb4a30ea2807b271d2145298";
         consensus.strSporkPubKeyOld = "040F129DE6546FE405995329A887329BED4321325B1A73B0A257423C05C1FCFE9E40EF0678AEF59036A22C42E61DFD29DF7EFB09F56CC73CADF64E05741880E3E7";
-        consensus.nTime_EnforceNewSporkKey = 1717515031;    //!> December 21, 2020 01:00:00 AM GMT
+        consensus.nTime_EnforceNewSporkKey = 1717531098;    //!> December 21, 2020 01:00:00 AM GMT
         consensus.nTime_RejectOldSporkKey = 0;     //!> March 1, 2021 01:00:00 AM GMT
 
         // height-based activations
@@ -251,7 +251,7 @@ public:
         consensus.height_last_ZC_WrappedSerials = -1;
 
         // validation by-pass
-        consensus.nPivxBadBlockTime = 1717515031;    // Skip nBit validation of Block 259201 per PR #915
+        consensus.nPivxBadBlockTime = 1717531098;    // Skip nBit validation of Block 259201 per PR #915
         consensus.nPivxBadBlockBits = 0x1c056dac;    // Skip nBit validation of Block 259201 per PR #915
 
         // Zerocoin-related params
