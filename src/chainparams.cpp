@@ -289,10 +289,10 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 4-byte int at any alignment.
          */
-        pchMessageStart[0] = 0x90;
-        pchMessageStart[1] = 0xc4;
-        pchMessageStart[2] = 0xfd;
-        pchMessageStart[3] = 0xe9;
+        pchMessageStart[0] = 0x45;
+        pchMessageStart[1] = 0xa7;
+        pchMessageStart[2] = 0x3b;
+        pchMessageStart[3] = 0xf2;
         nDefaultPort = 51472;
 
         // Note that of those with the service bits flag, most only support a subset of possible options
@@ -300,15 +300,15 @@ public:
         //vSeeds.emplace_back("pivx.seed2.fuzzbawls.pw", true);    // Secondary DNS Seeder from Fuzzbawls
        //vSeeds.emplace_back("dnsseed.liquid369.wtf", true);     // Primary DNS Seeder from Liquid369
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
-        base58Prefixes[STAKING_ADDRESS] = std::vector<unsigned char>(1, 63);     // starting with 'S'
-        base58Prefixes[EXCHANGE_ADDRESS] = {0x01, 0xb9, 0xa2};   // starts with EXM
-        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 212);
-        base58Prefixes[EXT_PUBLIC_KEY] = {0x02, 0x2D, 0x25, 0x33};
-        base58Prefixes[EXT_SECRET_KEY] = {0x02, 0x21, 0x31, 0x2B};
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 120);     // 'q'
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 22);      // 'Q'
+        base58Prefixes[STAKING_ADDRESS] = std::vector<unsigned char>(1, 81);     // starting with 'Y'
+        base58Prefixes[EXCHANGE_ADDRESS] = {0x51, 0x4E, 0x54};   // starts with QNT
+        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 213);          // 'r'
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x03, 0x27, 0x37, 0x3F};                // starting with 'QC'
+        base58Prefixes[EXT_SECRET_KEY] = {0x03, 0x22, 0x32, 0x3A};                // starting with 'QS'
         // BIP44 coin type is from https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        base58Prefixes[EXT_COIN_TYPE] = {0x80, 0x00, 0x00, 0x77};
+        base58Prefixes[EXT_COIN_TYPE] = {0x80, 0x00, 0x01, 0x11};                 // QuantumCloak (QNT) coin type
 
         vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
 
@@ -316,14 +316,14 @@ public:
         fRequireStandard = true;
 
         // Sapling
-        bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "ps";
-        bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "pviews";
-        bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "pivks";
-        bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "p-secret-spending-key-main";
-        bech32HRPs[SAPLING_EXTENDED_FVK]         = "pxviews";
+        bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "qps";
+        bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "qpviews";
+        bech32HRPs[SAPLING_INCOMING_VIEWING_KEY] = "qpivks";
+        bech32HRPs[SAPLING_EXTENDED_SPEND_KEY]   = "qp-secret-spending-key-main";
+        bech32HRPs[SAPLING_EXTENDED_FVK]         = "qpxviews";
 
-        bech32HRPs[BLS_SECRET_KEY]               = "bls-sk";
-        bech32HRPs[BLS_PUBLIC_KEY]               = "bls-pk";
+bech32HRPs[BLS_SECRET_KEY]               = "bls-sk-qnt";
+bech32HRPs[BLS_PUBLIC_KEY]               = "bls-pk-qnt";
 
         // long living quorum params
         consensus.llmqs[Consensus::LLMQ_50_60] = llmq50_60;
