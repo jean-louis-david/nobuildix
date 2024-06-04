@@ -191,29 +191,10 @@ public:
     {
         strNetworkID = "main";
 
-        genesis = CreateGenesisBlock(1717515031, 2402015, 0x1e0ffff0, 1, 250 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
-                consensus.hashGenesisBlock = uint256S("0x01");
-        consensus.powLimit   = uint256S("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-      if (true && genesis.GetHash() != consensus.hashGenesisBlock)
-        {
-            printf("min nBit:  %08x\n", UintToArith256(consensus.powLimit).GetCompact());
-            printf("recalculating params for mainnet.\n");
-            printf("old mainnet genesis nonce: %u\n", genesis.nNonce);
-            printf("old mainnet genesis hash:  %s\n", consensus.hashGenesisBlock.ToString().c_str());
-            // deliberately empty for loop finds nonce value.
-            for(genesis.nNonce = 0; genesis.GetHash().ToString() > consensus.powLimit.ToString(); genesis.nNonce++){
-                        if(genesis.nNonce%10000 == 0) { 
-                            printf("current mainnet genesis nonce: %d --> %s\n", genesis.nNonce, genesis.GetHash().ToString().c_str());
-                        };
-      }
-            printf("new mainnet genesis merkle root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
-            printf("new mainnet genesis nTime = %u \n", genesis.nTime);
-            printf("new mainnet genesis nonce: %u\n", genesis.nNonce);
-            printf("new mainnet genesis hash: %s\n", genesis.GetHash().ToString().c_str());
-        }
-        assert(consensus.hashGenesisBlock == uint256S("0x0000041e482b9b9691d98eefb48473405c0b8ec31b76df3797c74a78680ef818"));
-        assert(genesis.hashMerkleRoot == uint256S("0x1b2ef6e2f28be914103a277377ae7729dcd125dfeb8bf97bd5964ba72b6dc39b"));
+        genesis = CreateGenesisBlock(1717515031, 389314, 0x1e0ffff0, 1, 250 * COIN);
+        consensus.hashGenesisBlock = genesis.GetHash()
+        assert(consensus.hashGenesisBlock == uint256S("0x0000090e53138d4661624b7a45e1e3039ec2f2e2a4d6416800d0efe873253919"));
+        assert(genesis.hashMerkleRoot == uint256S("0xb6a4dceb846cc7be9725ac061a5f2c0d50c23ba12409979ea7273d1aa8e92994"));
 
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
