@@ -54,11 +54,29 @@ void CChainParams::UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, i
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "U.S. News & World Report Jan 28 2016 With His Absence, Trump Dominates Another Debate";
-    const CScript genesisOutputScript = CScript() << ParseHex("04c10e83b2703ccf322f7dbd62dd5855ac7c10bd055814ce121ba32607d573b8810c02c0582aed05b4deb9c4b77b26d92428c61256cd42774babea0a073b2ed0c9") << OP_CHECKSIG;
+    const char* pszTimestamp = "QCCore Jun 4 2024";
+    const CScript genesisOutputScript = CScript() << ParseHex("021a88aff20c35889184b71ffc7f81de8859b279feac43c33cb0a30a7dd4685571") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
+// Initialize mainnet genesis block
+static void FindGenesisBlock(CBlock& genesis, uint32_t nBits) {
+    uint256 hashTarget = uint256().SetCompact(nBits);
+    while (UintToArith256(genesis.GetHash()) > UintToArith256(hashTarget))
+    {
+        ++genesis.nNonce;
+        if (genesis.nNonce == 0)
+        {
+            printf("NONCE WRAPPED, incrementing time\n");
+            ++genesis.nTime;
+        }
+    }
+    printf("Genesis Block:\n");
+    printf("hashMerkleRoot %s\n", genesis.hashMerkleRoot.ToString().c_str());
+    printf("block.nTime = %u \n", genesis.nTime);
+    printf("block.nNonce = %u \n", genesis.nNonce);
+    printf("block.GetHash = %s\n", genesis.GetHash().ToString().c_str());
+}
 // this one is for testing only
 static Consensus::LLMQParams llmq_test = {
         .type = Consensus::LLMQ_TEST,
