@@ -192,7 +192,7 @@ public:
         strNetworkID = "main";
 
         genesis = CreateGenesisBlock(1717515031, 389314, 0x1e0ffff0, 1, 250 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash()
+        consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0x0000090e53138d4661624b7a45e1e3039ec2f2e2a4d6416800d0efe873253919"));
         assert(genesis.hashMerkleRoot == uint256S("0xb6a4dceb846cc7be9725ac061a5f2c0d50c23ba12409979ea7273d1aa8e92994"));
 
@@ -355,10 +355,10 @@ public:
     {
         strNetworkID = "test";
 
-        genesis = CreateGenesisBlock(1454124731, 2402015, 0x1e0ffff0, 1, 250 * COIN);
+        genesis = CreateGenesisBlock(1717515031, 389314, 0x1e0ffff0, 1, 250 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x0000041e482b9b9691d98eefb48473405c0b8ec31b76df3797c74a78680ef818"));
-        assert(genesis.hashMerkleRoot == uint256S("0x1b2ef6e2f28be914103a277377ae7729dcd125dfeb8bf97bd5964ba72b6dc39b"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000090e53138d4661624b7a45e1e3039ec2f2e2a4d6416800d0efe873253919"));
+        assert(genesis.hashMerkleRoot == uint256S("0xb6a4dceb846cc7be9725ac061a5f2c0d50c23ba12409979ea7273d1aa8e92994"));
 
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
