@@ -2,7 +2,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-name: CI Actions for Fuzzbawls
+name: CI Actions for Fuzzybawls
 
 on: [push, pull_request]
 jobs:
@@ -59,7 +59,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Environment
-        run: sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --fix-missing --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
 
       - name: depends cache files
         uses: actions/cache@v4
@@ -181,7 +183,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Environment
-        run: sudo apt-get install --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install --fix-missing --no-install-recommends --no-upgrade -qq "$APT_BASE" ${{ matrix.config.packages }}
 
       - name: depends cache files
         if: matrix.config.no_depends != 1
