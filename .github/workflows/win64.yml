@@ -43,7 +43,10 @@ jobs:
           nsis \
           g++-mingw-w64-x86-64 \
           wine-binfmt \
-          wine64
+          wine64 \
+          qtbase5-dev \
+          qttools5-dev-tools \
+          qttools5-dev
 
     - name: Build dependencies
       run: |
