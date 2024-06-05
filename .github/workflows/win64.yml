@@ -1,4 +1,4 @@
-name: Compile DogeExtreme Windows 64 Wallet
+name: Compile QuantumCloak Windows 64 Wallet
 
 on:
   push:
@@ -9,69 +9,60 @@ on:
       - master
 
 jobs:
-
-  build_depends:
-    name: Build Dependencies
+  build:
     runs-on: ubuntu-20.04
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          python3 \
-          g++-mingw-w64-x86-64 \
-          nsis \
-          wine-binfmt \
-          wine64
-
-    - name: Build Dependencies
-      run: |
-        make -j2 -C depends HOST=x86_64-w64-mingw32
 
     - name: Cache dependencies
       uses: actions/cache@v4
       with:
-        path: depends
-        key: ${{ runner.os }}-depends-x86_64-w64-mingw32
-        restore-keys: ${{ runner.os }}-depends-x86_64-w64-mingw32
-
-  build_wallet:
-    name: Build Wallet
-    runs-on: ubuntu-20.04
-    needs: build_depends
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+        path: |
+          depends
+          src/.libs
+          src/.deps
+          src/.objs
+          .config.cache
+        key: ${{ runner.os }}-build-${{ hashFiles('**/*') }}
+        restore-keys: |
+          ${{ runner.os }}-build-
 
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
+          build-essential \
+          libtool \
+          autotools-dev \
+          automake \
+          pkg-config \
+          bsdmainutils \
           python3 \
-          g++-mingw-w64-x86-64 \
           nsis \
+          g++-mingw-w64-x86-64 \
           wine-binfmt \
           wine64
 
-    - name: Restore dependencies cache
-      uses: actions/cache@v4
-      with:
-        path: depends
-        key: ${{ runner.os }}-depends-x86_64-w64-mingw32
-        restore-keys: ${{ runner.os }}-depends-x86_64-w64-mingw32
+    - name: Build dependencies
+      run: |
+        cd depends
+        make -j $(nproc) HOST=x86_64-w64-mingw32
 
-    - name: Configure Wallet
+    - name: Configure wallet
       run: |
         ./autogen.sh
-        ./configure --prefix=$PWD/depends/x86_64-w64-mingw32 --disable-dependency-tracking --with-gui=auto --enable-reduce-exports --disable-online-rust
-        
-    - name: Build Wallet
+        CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=$PWD/depends/x86_64-w64-mingw32 --enable-reduce-exports --disable-online-rust --with-gui=qt5
+
+    - name: Compile wallet
       run: |
-        make -j2 deploy
-        
+        make -j $(nproc)
+
+    - name: Find and list binaries
+      run: |
+        find src -type f -executable -exec ls -lah {} \;
+
     - name: Make binaries executable
       run: |
         chmod +x src/pivxd.exe
@@ -83,8 +74,29 @@ jobs:
       run: |
         tar -czvf windows64.tar.gz src/pivxd.exe src/pivx-cli.exe src/pivx-tx.exe src/qt/pivx-qt.exe
 
+    - name: Create GitHub release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        name: "QuantumCloak Wallet Release v${{ github.run_number }}"
+        draft: false
+        prerelease: true
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: windows64.tar.gz
+        asset_name: windows64.tar.gz
+        asset_content_type: application/gzip
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: windows64-build
+        name: build-artifacts
         path: windows64.tar.gz
