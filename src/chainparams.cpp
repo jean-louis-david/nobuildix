@@ -168,7 +168,7 @@ static const CCheckpointData data = {
 
 static MapCheckpoints mapCheckpointsTestnet = {
     {0, uint256S("0x000006f07ae0daf97ee651fcc37b46ae07ca8d7bb3be783e662bd1f701003b33")},
-    //{    201, uint256S("6ae7d52092fd918c8ac8d9b1334400387d3057997e6e927a88e57186dc395231")},     // v5 activation (PoS/Sapling)
+    {    201, uint256S("4a2975446a8856bf6e1c061cfdcaf2432c81e7d60a87921a25ec67a6f9908cb4")},     // v5 activation (PoS/Sapling)
 };
 
 static const CCheckpointData dataTestnet = {
@@ -384,11 +384,12 @@ public:
         consensus.nTimeSlotLength = 15;
         consensus.nMaxProposalPayments = 20;
 
+
         // spork keys
-        consensus.strSporkPubKey = "04677c34726c491117265f4b1c83cef085684f36c8df5a97a3a42fc499316d0c4e63959c9eca0dba239d9aaaf72011afffeb3ef9f51b9017811dec686e412eb504";
+        consensus.strSporkPubKey = "045cf15bfb0af94aceaf980519c1d07497e2ec771a36542aa9a7ddf7631cd606730d788cf3ca0907ffa85d75444f1304331e8b2ef599deca942b90253d82c3dccb";
         consensus.strSporkPubKeyOld = "04E88BB455E2A04E65FCC41D88CD367E9CCE1F5A409BE94D8C2B4B35D223DED9C8E2F4E061349BA3A38839282508066B6DC4DB72DD432AC4067991E6BF20176127";
-        consensus.nTime_EnforceNewSporkKey = 1608512400;    //!> December 21, 2020 01:00:00 AM GMT
-        consensus.nTime_RejectOldSporkKey = 1614560400;     //!> March 1, 2021 01:00:00 AM GMT
+        consensus.nTime_EnforceNewSporkKey = 1717515031;    //!> December 21, 2020 01:00:00 AM GMT
+        consensus.nTime_RejectOldSporkKey = 0;     //!> March 1, 2021 01:00:00 AM GMT
 
         // height based activations
         consensus.height_last_invalid_UTXO = -1;
@@ -436,10 +437,10 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 4-byte int at any alignment.
          */
-        pchMessageStart[0] = 0xf5;
-        pchMessageStart[1] = 0xe6;
-        pchMessageStart[2] = 0xd5;
-        pchMessageStart[3] = 0xca;
+        pchMessageStart[0] = 0x12;
+        pchMessageStart[1] = 0x34;
+        pchMessageStart[2] = 0x56;
+        pchMessageStart[3] = 0x78;
         nDefaultPort = 51474;
 
         // nodes with support for servicebits filtering should be at the top
