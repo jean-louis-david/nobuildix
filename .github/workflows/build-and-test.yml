@@ -673,7 +673,7 @@ jobs:
           build/pivx-${{ matrix.config.host }}/release/pivx-5.6.99-win64-setup.exe
 
       - name: Upload Build Artifacts for Linux and macOS
-        if: matrix.config.host != 'mingw32'
+        if: matrix.config.host != 'darwin'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.host }}-built
