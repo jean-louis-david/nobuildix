@@ -2,7 +2,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-name: CI Actions for Fuzzybawls
+name: CI Actions for PIVX
 
 on: [push, pull_request]
 jobs:
@@ -205,65 +205,15 @@ jobs:
           key: ${{ runner.os }}-depbuild-${{ matrix.config.id }}-ccache
           restore-keys: ${{ runner.os }}-depbuild-${{ matrix.config.id }}-ccache
 
-      - name: Configure Wallet
-        run: |
-          PATH=$(echo $PATH | tr ':' "\n" | sed '/\/opt\/python/d' | tr "\n" ":" | sed "s|::|:|g")
-          # Add llvm-symbolizer directory to PATH. Needed to get symbolized stack traces from the sanitizers.
-          PATH=$PATH:/usr/lib/llvm-6.0/bin/
-          export PATH
-
-          mkdir -p depends/SDKs depends/sdk-sources
-
-          OSX_SDK_BASENAME="Xcode-${{ matrix.config.XCODE_VERSION }}-${{ matrix.config.XCODE_BUILD_ID }}-extracted-SDK-with-libcxx-headers.tar.gz"
-          OSX_SDK_PATH="depends/sdk-sources/${OSX_SDK_BASENAME}"
-
-          if [ -n "${{ matrix.config.XCODE_VERSION }}" ] && [ ! -f "$OSX_SDK_PATH" ]; then
-            curl --location --fail "${SDK_URL}/${OSX_SDK_BASENAME}" -o "$OSX_SDK_PATH"
-          fi
-
-          if [ -n "${{ matrix.config.XCODE_VERSION }}" ] && [ -f "$OSX_SDK_PATH" ]; then
-            tar -C "depends/SDKs" -xf "$OSX_SDK_PATH"
-          fi
-
-          if [[ ${{ matrix.config.host }} = *-mingw32 ]]; then
-            BIN=$(which ${{ matrix.config.host }}-g++-posix)
-            sudo update-alternatives --set ${{ matrix.config.host }}-g++ $BIN
-            sudo update-binfmts --import /usr/share/binfmts/wine
-          fi
-
-          if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
-            OUTDIR_PATH="$GITHUB_WORKSPACE/$GITHUB_RUN_NUMBER-${{ matrix.config.host }}"
-            BITCOIN_CONFIG_ALL="--disable-dependency-tracking --prefix=$GITHUB_WORKSPACE/depends/${{ matrix.config.host }} --bindir=$OUTDIR_PATH/bin --libdir=$OUTDIR_PATH/lib"
-          fi
-
-          if [ "${{ matrix.config.unit_tests }}" = "true" ] || [ "${{ matrix.config.functional_tests }}" = "true" ]; then
-            ./params/install-params.sh
-          fi
-
-          echo ::group::Autogen
-          ./autogen.sh
-          echo ::endgroup::
-
-          mkdir build && cd build
-
-          echo ::group::Configure
-          ../configure --cache-file=config.cache $BITCOIN_CONFIG_ALL ${{ matrix.config.BITCOIN_CONFIG }} || ( cat config.log && false)
-          echo ::endgroup::
-
-          echo ::group::Distdir
-          make distdir VERSION=${{ matrix.config.host }}
-          echo ::endgroup::
-
-          cd pivx-${{ matrix.config.host }}
-
-          echo ::group::Configure
-          ./configure --cache-file=../config.cache $BITCOIN_CONFIG_ALL ${{ matrix.config.BITCOIN_CONFIG }} || ( cat config.log && false)
-          echo ::endgroup
-
       - name: Build Wallet
         run: |
           cd build/pivx-${{ matrix.config.host }}/
           make -j2 ${{ matrix.config.goal }} || ( echo "Build failure. Verbose build follows." && make ${{ matrix.config.goal }} V=1 ; false )
+
+      - name: Find built files
+        run: |
+          echo "Finding pivxd and pivx-cli in build directory:"
+          find build/pivx-${{ matrix.config.host }}/ -name pivxd -o -name pivx-cli
 
       - name: Create Tar Archive
         run: |
@@ -280,13 +230,25 @@ jobs:
             else
               echo "File pivx-cli does not exist at path $PIVX_CLI_PATH"
             fi
+            tar -hcvf ${{ matrix.config.host }}-built.tar \
+              build/pivx-${{ matrix.config.host }}/share/rpcauth \
+              build/pivx-${{ matrix.config.host }}/params \
+              "$PIVXD_PATH" \
+              "$PIVX_CLI_PATH" \
+              build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
+          else
+            tar -hcvf ${{ matrix.config.host }}-built.tar \
+              build/pivx-${{ matrix.config.host }}/share/rpcauth \
+              build/pivx-${{ matrix.config.host }}/params \
+              build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
           fi
-          tar -hcvf ${{ matrix.config.host }}-built.tar \
-            build/pivx-${{ matrix.config.host }}/share/rpcauth \
-            build/pivx-${{ matrix.config.host }}/params/ \
-            "$PIVXD_PATH" \
-            "$PIVX_CLI_PATH" \
-            build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.config.host }}-built
+          path: ${{ matrix.config.host }}-built.tar
+          retention-days: 5
 
   # Create a pre-release using the uploaded artifacts.
   create_pre_release:
@@ -311,6 +273,6 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/pivx-*.tar
+          asset_path: ${{ matrix.config.host }}-built.tar
           asset_name: pivx-${{ github.run_number }}.tar
           asset_content_type: application/x-tar
