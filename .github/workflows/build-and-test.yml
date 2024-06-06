@@ -6,7 +6,6 @@ name: CI Actions for PIVX
 
 on: [push, pull_request]
 jobs:
-
   # Pre-build linting job. This runs various lint tests.
   # Any failures here will halt the rest of the workflow.
   lint:
@@ -656,19 +655,21 @@ jobs:
           make -j2 check VERBOSE=1
 
       - name: Create Tar Archive
-        if: matrix.config.functional_tests == true
         run: |
-          if [[ ${{ matrix.config.host }} != *apple* ]]; then
+          if [[ ${{ matrix.config.host }} != *apple* && ${{ matrix.config.host }} != *mingw32 ]]; then
             strip build/pivx-${{ matrix.config.host }}/src/pivxd
             strip build/pivx-${{ matrix.config.host }}/src/pivx-cli
+            tar -hcvf ${{ matrix.config.host }}-built.tar \
+              build/pivx-${{ matrix.config.host }}/share/rpcauth \
+              build/pivx-${{ matrix.config.host }}/params/ \
+              build/pivx-${{ matrix.config.host }}/src/pivxd \
+              build/pivx-${{ matrix.config.host }}/src/pivx-cli \
+              build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
+          elif [[ ${{ matrix.config.host }} = *mingw32 ]]; then
+            tar -hcvf pivx-5.6.99-win64-setup.tar build/pivx-${{ matrix.config.host }}/release/pivxd.exe build/pivx-${{ matrix.config.host }}/release/pivx-qt.exe build/pivx-${{ matrix.config.host }}/release/pivx-cli.exe
+          elif [[ ${{ matrix.config.host }} = *darwin* ]]; then
+            tar -hcvf pivx-5.6.99-macos.dmg.tar build/pivx-${{ matrix.config.host }}/PIVX-Core.dmg
           fi
-          tar -hcvf ${{ matrix.config.host }}-built.tar \
-            build/pivx-${{ matrix.config.host }}/share/rpcauth \
-            build/pivx-${{ matrix.config.host }}/test/ \
-            build/pivx-${{ matrix.config.host }}/params/ \
-            build/pivx-${{ matrix.config.host }}/src/pivxd \
-            build/pivx-${{ matrix.config.host }}/src/pivx-cli \
-            build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
 
       - name: Upload Build Artifact
         if: matrix.config.functional_tests == true
