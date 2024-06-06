@@ -268,22 +268,25 @@ jobs:
       - name: Create Tar Archive
         run: |
           if [[ ${{ matrix.config.host }} != *apple* ]]; then
-            strip build/pivx-${{ matrix.config.host }}/src/pivxd
-            strip build/pivx-${{ matrix.config.host }}/src/pivx-cli
+            PIVXD_PATH=$(find build/pivx-${{ matrix.config.host }}/ -name pivxd)
+            PIVX_CLI_PATH=$(find build/pivx-${{ matrix.config.host }}/ -name pivx-cli)
+            if [[ -f "$PIVXD_PATH" ]]; then
+              strip "$PIVXD_PATH"
+            else
+              echo "File pivxd does not exist at path $PIVXD_PATH"
+            fi
+            if [[ -f "$PIVX_CLI_PATH" ]]; then
+              strip "$PIVX_CLI_PATH"
+            else
+              echo "File pivx-cli does not exist at path $PIVX_CLI_PATH"
+            fi
           fi
           tar -hcvf ${{ matrix.config.host }}-built.tar \
             build/pivx-${{ matrix.config.host }}/share/rpcauth \
             build/pivx-${{ matrix.config.host }}/params/ \
-            build/pivx-${{ matrix.config.host }}/src/pivxd \
-            build/pivx-${{ matrix.config.host }}/src/pivx-cli \
+            "$PIVXD_PATH" \
+            "$PIVX_CLI_PATH" \
             build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.config.host }}-built
-          path: ${{ matrix.config.host }}-built.tar
-          retention-days: 5
 
   # Create a pre-release using the uploaded artifacts.
   create_pre_release:
