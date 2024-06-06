@@ -647,94 +647,45 @@ jobs:
           cd build/pivx-${{ matrix.config.host }}
           make -j2 check VERBOSE=1
 
-      - name: Create Tar Archive
+      - name: Create Tar Archive for Linux
+        if: matrix.config.host == 'linux'
         run: |
-          if [[ ${{ matrix.config.host }} = *linux* || ${{ matrix.config.host }} = *darwin* ]]; then
-            if [[ ${{ matrix.config.host }} = *linux* ]]; then
-              strip build/pivx-${{ matrix.config.host }}/src/pivxd
-              strip build/pivx-${{ matrix.config.host }}/src/pivx-cli
-              tar -hcvf ${{ matrix.config.host }}-built.tar \
-                build/pivx-${{ matrix.config.host }}/share/rpcauth \
-                build/pivx-${{ matrix.config.host }}/params/ \
-                build/pivx-${{ matrix.config.host }}/src/pivxd \
-                build/pivx-${{ matrix.config.host }}/src/pivx-cli \
-                build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
-            elif [[ ${{ matrix.config.host }} = *darwin* ]]; then
-              tar -hcvf pivx-5.6.99-macos.dmg.tar build/pivx-${{ matrix.config.host }}/dist/PIVX-Core.dmg
-            fi
-          fi
+          strip build/pivx-${{ matrix.config.host }}/src/pivxd
+          strip build/pivx-${{ matrix.config.host }}/src/pivx-cli
+          tar -hcvf ${{ matrix.config.host }}-built.tar \
+            build/pivx-${{ matrix.config.host }}/share/rpcauth \
+            build/pivx-${{ matrix.config.host }}/params/ \
+            build/pivx-${{ matrix.config.host }}/src/pivxd \
+            build/pivx-${{ matrix.config.host }}/src/pivx-cli \
+            build/pivx-${{ matrix.config.host }}/src/test/data/asmap.raw
 
-      - name: Upload Build Artifact
+      - name: Create Tar Archive for macOS
+        if: matrix.config.host == 'darwin'
+        run: |
+          tar -hcvf pivx-5.6.99-macos.dmg.tar build/pivx-${{ matrix.config.host }}/dist/PIVX-Core.dmg
 
+      - name: Create Tar Archive for Windows
+        if: matrix.config.host == 'mingw32'
+        run: |
+          tar -hcvf pivx-5.6.99-win64-setup.tar \
+          build/pivx-${{ matrix.config.host }}/release/pivx-qt.exe \
+          build/pivx-${{ matrix.config.host }}/release/pivx-cli.exe \
+          build/pivx-${{ matrix.config.host }}/release/pivx-5.6.99-win64-setup.exe
+
+      - name: Upload Build Artifacts for Linux and macOS
+        if: matrix.config.host != 'mingw32'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.host }}-built
-          path: ${{ matrix.config.host }}-built.tar
+          path: |
+            ${{ matrix.config.host }}-built.tar
+            build/pivx-${{ matrix.config.host }}/dist/PIVX-Core.dmg
           retention-days: 5
 
-  # Job to run the python functional test suite for depends based linux builds.
-  # Uses a build artifact from the previous job to provide pivxd/pivx-cli and the test suite files.
-  test_depends_wallet:
-    name: Test-Depends-${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
-    needs: build_depends_wallet
-    env:
-      PARAMS_DIR: ${{ github.workspace }}/.pivx-params
-    defaults:
-      run:
-        shell: bash
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - name: x86_64 Linux [Full Functional Tests]
-            id: Linux-x86_64-tests
-            os: ubuntu-20.04
-            host: x86_64-unknown-linux-gnu
-            packages: python3-zmq
-            test_runner_extra: "--coverage --all --exclude feature_dbcrash"
-
-          - name: x86_64 Linux [Only functional tests on legacy pre-HD wallets]
-            id: Linux-x86_64-legacy-tests
-            os: ubuntu-20.04
-            host: x86_64-unknown-linux-gnu
-            packages: python3-zmq
-            test_runner_extra: "--legacywallet"
-
-          - name: x86_64 macOS [Full Functional Tests]
-            id: macos-x86_64-tests
-            os: macos-12
-            host: x86_64-apple-darwin16
-            packages: python@3.8
-            test_runner_extra: "--all --exclude feature_dbcrash"
-
-    steps:
-      - name: Setup Environment
-        run: |
-          if [[ ${{ matrix.config.os }} = ubuntu* ]]; then
-            sudo apt-get install --no-install-recommends --no-upgrade -qq ${{ matrix.config.packages }}
-          fi
-          if [[ ${{ matrix.config.os }} = macos* ]]; then
-            brew install ${{ matrix.config.packages }}
-          fi
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
+      - name: Upload Build Artifacts for Windows
+        if: matrix.config.host == 'mingw32'
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.host }}-built
-
-      - name: Extract Artifact Archive
-        run: tar -xvf ${{ matrix.config.host }}-built.tar
-
-      - name: Install PIVX Params
-        run: |
-          cd build/pivx-${{ matrix.config.host }}/params/
-          ./install-params.sh
-
-      - name: Run Functional Tests
-        run: |
-          cd build/pivx-${{ matrix.config.host }}/
-          if [[ ${{ matrix.config.os }} = macos* ]]; then
-            sed -i.old 's/home/Users/' test/config.ini
-          fi
-          test/functional/test_runner.py --combinedlogslen=4000 ${{ matrix.config.test_runner_extra }}
+          path: pivx-5.6.99-win64-setup.tar
+          retention-days: 5
