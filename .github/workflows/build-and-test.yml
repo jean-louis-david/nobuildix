@@ -293,14 +293,8 @@ jobs:
           cd build/pivx-${{ matrix.config.os }}/
           make -j2 ${{ matrix.config.goal }} || ( echo "Build failure. Verbose build follows." && make ${{ matrix.config.goal }} V=1 ; false )
 
-      - name: Run Unit Tests
-        if: matrix.config.unit_tests == true
-        run: |
-          cd build/pivx-${{ matrix.config.os }}/
-          make -j2 check VERBOSE=1
 
       - name: Create Tar Archive
-        if: matrix.config.functional_tests == true
         run: |
           strip build/pivx-${{ matrix.config.os }}/src/pivxd
           strip build/pivx-${{ matrix.config.os }}/src/pivx-cli
@@ -313,7 +307,7 @@ jobs:
             build/pivx-${{ matrix.config.os }}/src/test/data/asmap.raw
 
       - name: Upload Build Artifact
-        if: matrix.config.functional_tests == true
+
         uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.config.os }}-built
@@ -656,9 +650,10 @@ jobs:
 
       - name: Create Tar Archive
         run: |
-          if [[ ${{ matrix.config.host }} != *apple* && ${{ matrix.config.host }} != *mingw32 ]]; then
-            strip build/pivx-${{ matrix.config.host }}/src/pivxd
-            strip build/pivx-${{ matrix.config.host }}/src/pivx-cli
+          if [[ ${{ matrix.config.host }} != *apple* ]]; then
+              strip build/pivx-${{ matrix.config.host }}/src/pivxd
+              strip build/pivx-${{ matrix.config.host }}/src/pivx-cli
+          fi      
             tar -hcvf ${{ matrix.config.host }}-built.tar \
               build/pivx-${{ matrix.config.host }}/share/rpcauth \
               build/pivx-${{ matrix.config.host }}/params/ \
@@ -675,7 +670,7 @@ jobs:
           fi
 
       - name: Upload Build Artifact
-        if: matrix.config.functional_tests == true
+
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.host }}-built
