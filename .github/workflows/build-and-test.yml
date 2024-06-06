@@ -670,7 +670,7 @@ jobs:
               build/pivx-${{ matrix.config.host }}/release/pivx-qt.exe \
               build/pivx-${{ matrix.config.host }}/release/pivx-cli.exe \
               build/pivx-${{ matrix.config.host }}/release/pivx-5.6.99-win64-setup.exe
-          elif [[ ${{ matrix.config.host }} = *darwin* ]]; then
+          elif [[ ${{ matrix.config.host }} = *darwin16* ]]; then
             tar -hcvf pivx-5.6.99-macos.dmg.tar build/pivx-${{ matrix.config.host }}/PIVX-Core.dmg
           fi
 
